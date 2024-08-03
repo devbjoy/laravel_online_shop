@@ -50,7 +50,7 @@ class CategoryController extends Controller
         #images
         
         $file = $request->file('photo');
-        $newName = time() . '_' . $file->getClientOriginalName();
+        $newName = time() . '.' . $file->extension();
         $path = $request->file('photo')->storeAs('categoryImage',$newName,'public');
 
         
@@ -95,40 +95,54 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user = Categorie::find($id);
+        $category = Categorie::find($id);
+        if(empty($category)){
+            return redirect()->back()->with('delete','category not found');
+        }
         $validate = $request->validate([
             'name' => 'required',
             'status' => 'required',
-            'photo' => 'required|mimes:jpg,png,jpeg',
         ]);
 
-        #delete image
-        
-        $image_path = public_path('storage/') . $user->image;
-        if(file_exists($image_path)){
-            @unlink($image_path);
-        }
-
-        #images
-        
-        $file = $request->file('photo');
-        $newName = time() . '_' . $file->getClientOriginalName();
-        $path = $request->file('photo')->storeAs('categoryImage',$newName,'public');
-
-        
         $slug = Str::slug($request->name,'-');
 
-        #update images
-        
-        $category = Categorie::where('id',$id)->update([
-            'name' => $request->name,
-            'slug' => $slug,
-            'status' => $request->status,
-            'image' => $path,
-            'show_home' => $request->showHome,
-        ]);
+        if(empty($request->photo)){
 
-        return redirect()->route('category.index')->with('status','This Category Updated Successfully');
+            $category->update([
+                'name' => $request->name,
+                'slug' => $slug,
+                'status' => $request->status,
+                'show_home' => $request->showHome,
+            ]);
+            return redirect()->route('category.index')->with('status','This Category Updated Successfully');
+
+        }else{
+            #delete image
+            $image_path = public_path('storage/') . $category->image;
+            if(file_exists($image_path)){
+                @unlink($image_path);
+            }
+
+            #images      
+            $file = $request->file('photo');
+            $newName = time() . '.' . $file->extension();
+            $path = $request->file('photo')->storeAs('categoryImage',$newName,'public');
+
+            
+
+            #update images
+            
+            $category->update([
+                'name' => $request->name,
+                'slug' => $slug,
+                'status' => $request->status,
+                'image' => $path,
+                'show_home' => $request->showHome,
+            ]);
+
+            return redirect()->route('category.index')->with('status','This Category Updated Successfully');
+        }
+        
     }
 
     /**

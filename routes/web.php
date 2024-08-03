@@ -11,6 +11,7 @@ use App\Http\Controllers\admin\ProductSubCategoryController;
 
 
 use App\Http\Controllers\front\FrontController;
+use App\Http\Controllers\front\ShopController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,9 @@ use App\Http\Controllers\front\FrontController;
 // Front page controller 
 
 Route::get('/',[FrontController::class,'index'])->name('front.home');
+Route::get('/shop/{categorySlug?}/{subcategorySlug?}',[ShopController::class,'index'])->name('front.shop');
+Route::get('/product/{productSlug}',[ShopController::class,'product'])->name('front.product');
+Route::get('products/get-products', [ProductController::class, 'getProducts'])->name('product.related-product');
 
 // Admin page Controllers
 
@@ -43,6 +47,7 @@ Route::group(['prefix' => 'admin'],function(){
 
     });
 
+    // Route::get('products/get-products', [ProductController::class, 'getProducts'])->name('product.related-product');
     Route::group(['middleware' => 'admin.auth'],function(){
         //dashboard controller route
         Route::get('/dashboard',[HomeController::class,'index'])->name('admin.dashboard');
@@ -61,7 +66,8 @@ Route::group(['prefix' => 'admin'],function(){
         //products controller route
         Route::resource('/products',ProductController::class);
 
-        //productsubcategory controller route
+
+        //product subcategory controller route
         Route::get('products-subcategory',[ProductSubCategoryController::class,'getSubCat'])->name('product_subcategory');
     });
 });

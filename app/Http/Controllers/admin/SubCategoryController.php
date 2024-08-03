@@ -108,6 +108,7 @@ class SubCategoryController extends Controller
             'name' => $request->name,
             'slug' => $slug,
             'status' => $request->status,
+            'show_home' => $request->show_home,
         ]);
 
         return redirect()->route('subcategory.index')->with('status','This Sub_Category Updated Successfully');

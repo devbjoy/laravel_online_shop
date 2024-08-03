@@ -65,6 +65,7 @@
 											<th>Name</th>
 											<th>Slug</th>
 											<th>Images</th>
+											<th>Show Home</th>
 											<th width="100">Status</th>
 											<th width="100">Edit</th>
 											<th width="100">Delete</th>
@@ -81,6 +82,7 @@
 											<td>
 												<img src="{{ asset('/storage/'.$category->image) }}" alt="" style="width: 70px;height: 70px;">
 											</td>
+											<td>{{ $category->show_home }}</td>
 											<td>
 												@if($category->status == 1)
 													<svg class="text-success-500 h-6 w-6 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">

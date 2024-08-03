@@ -65,12 +65,12 @@ class ProductController extends Controller
 
         // product image lg
         $image_lg = $request->file('image_lg');
-        $newName_lg = time() . '_' . $image_lg->getClientOriginalName();
+        $newName_lg = time() . '.' . $image_lg->extension();
         $image_path_lg = $request->file('image_lg')->storeAs('product-images',$newName_lg,'public');
 
         // product image sm
         $image_sm = $request->file('image_sm');
-        $newName_sm = time(). '_' .$image_sm->getClientOriginalName();
+        $newName_sm = time(). '.' .$image_sm->extension();
         $image_path_sm = $request->file('image_sm')->storeAs('product-images',$newName_sm,'public');
 
 
@@ -92,6 +92,8 @@ class ProductController extends Controller
             'sub_category_id' => $request->sub_category,
             'brand_id' => $request->brands,
             'is_featured' => $request->is_featured,
+            'sort_description' => $request->sort_description,
+            'shipping_returns' => $request->shipping_returns,
         ]);
 
         $product->product_images()->create([
@@ -135,16 +137,14 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-
+        // return $request->all();
         $product = Product::with('product_images')->find($id);
 
         $validate = $request->validate([
             'title' => 'required',
             'price' => 'required|numeric',
-            'image_lg' => 'required|mimes:jpg,png,jpeg',
-            'image_sm' => 'required|mimes:jpg,png,jpeg',
             'category' => 'required|numeric',
-            'sku' => 'required|unique:products',
+            'sku' => 'required',
             'is_featured' => 'required|in:Yes,No',
             'track_qty' => 'required|in:Yes,No',
         ]);
@@ -155,57 +155,154 @@ class ProductController extends Controller
             ]);
         }
 
-        // Delete product image lg
-         $image_path_lg = public_path('storage/') . $product->product_images->product_image_lg;
-        if(file_exists($image_path_lg)){
-            @unlink($image_path_lg);
-        }
-
-        // Delete product image sm
-        $image_path_sm = public_path('storage/') . $product->product_images->product_image_sm;
-        if(file_exists($image_path_sm)){
-            @unlink($image_path_sm);
-        }
-
-
-
-        // product image lg
-        $image_lg = $request->file('image_lg');
-        $newName_lg = time() . '_' . $image_lg->getClientOriginalName();
-        $image_path_lg = $request->file('image_lg')->storeAs('product-images',$newName_lg,'public');
-
-        // product image sm
-        $image_sm = $request->file('image_sm');
-        $newName_sm = time(). '_' .$image_sm->getClientOriginalName();
-        $image_path_sm = $request->file('image_sm')->storeAs('product-images',$newName_sm,'public');
-
-
-
         $slug = Str::slug($request->title,'-');
+        
+        if(empty($request->product_image_lg) && empty($request->product_image_sm)){
 
-         $product->where('id',$id)->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'price' => $request->price,
-            'slug' => $slug,
-            'compare_price' => $request->compare_price,
-            'sku' => $request->sku,
-            'barcode' => $request->barcode,
-            'track_qty' => $request->track_qty,
-            'qty' => $request->qty,
-            'status' => $request->status,
-            'category_id' => $request->category,
-            'sub_category_id' => $request->sub_category,
-            'brand_id' => $request->brands,
-            'is_featured' => $request->is_featured,
-        ]);
+            $product->where('id',$id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'price' => $request->price,
+                'slug' => $slug,
+                'compare_price' => $request->compare_price,
+                'sku' => $request->sku,
+                'barcode' => $request->barcode,
+                'track_qty' => $request->track_qty,
+                'qty' => $request->qty,
+                'status' => $request->status,
+                'category_id' => $request->category,
+                'sub_category_id' => $request->sub_category,
+                'brand_id' => $request->brands,
+                'is_featured' => $request->is_featured,
+                'sort_description' => $request->sort_description,
+                'shipping_returns' => $request->shipping_returns,
+            ]);
+            return redirect()->route('products.index')->with('status','This Product Updated Successfully');
 
-        $product->product_images()->update([
-            'product_image_lg' => $image_path_lg,
-            'product_image_sm' => $image_path_sm,
-        ]);
+        }elseif(empty($request->product_image_lg)){
+            // Delete product image sm
+            $image_path_sm = public_path('storage/') . $product->product_images->product_image_sm;
+            if(file_exists($image_path_sm)){
+                @unlink($image_path_sm);
+            }
 
-        return redirect()->route('products.index')->with('status','This Product Updated Successfully');
+            // product image sm
+            $image_sm = $request->file('product_image_sm');
+            $newName_sm = time(). '.' .$image_sm->extension();
+            $image_temp_path_sm = $request->file('product_image_sm')->storeAs('product-images',$newName_sm,'public');
+
+            $product->where('id',$id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'price' => $request->price,
+                'slug' => $slug,
+                'compare_price' => $request->compare_price,
+                'sku' => $request->sku,
+                'barcode' => $request->barcode,
+                'track_qty' => $request->track_qty,
+                'qty' => $request->qty,
+                'status' => $request->status,
+                'category_id' => $request->category,
+                'sub_category_id' => $request->sub_category,
+                'brand_id' => $request->brands,
+                'is_featured' => $request->is_featured,
+                'sort_description' => $request->sort_description,
+                'shipping_returns' => $request->shipping_returns,
+            ]);
+    
+            $product->product_images()->update([
+                'product_image_sm' => $image_temp_path_sm,
+            ]);
+    
+            return redirect()->route('products.index')->with('status','This Product Updated Successfully');
+
+        }elseif(empty($request->product_image_sm)){
+            // Delete product image lg
+            $image_path_lg = public_path('storage/') . $product->product_images->product_image_lg;
+            if(file_exists($image_path_lg)){
+                @unlink($image_path_lg);
+            }
+
+            // product image lg
+            $image_lg = $request->file('product_image_lg');
+            $newName_lg = time() . '.' . $image_lg->extension();
+            $image_temp_path_lg = $request->file('product_image_lg')->storeAs('product-images',$newName_lg,'public');
+
+            $product->where('id',$id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'price' => $request->price,
+                'slug' => $slug,
+                'compare_price' => $request->compare_price,
+                'sku' => $request->sku,
+                'barcode' => $request->barcode,
+                'track_qty' => $request->track_qty,
+                'qty' => $request->qty,
+                'status' => $request->status,
+                'category_id' => $request->category,
+                'sub_category_id' => $request->sub_category,
+                'brand_id' => $request->brands,
+                'is_featured' => $request->is_featured,
+                'sort_description' => $request->sort_description,
+                'shipping_returns' => $request->shipping_returns,
+            ]);
+    
+            $product->product_images()->update([
+                'product_image_lg' => $image_temp_path_lg,
+            ]);
+    
+            return redirect()->route('products.index')->with('status','This Product Updated Successfully');
+
+        }else{
+            // Delete product image lg
+            $image_path_lg = public_path('storage/') . $product->product_images->product_image_lg;
+            if(file_exists($image_path_lg)){
+                @unlink($image_path_lg);
+            }
+
+            // Delete product image sm
+            $image_path_sm = public_path('storage/') . $product->product_images->product_image_sm;
+            if(file_exists($image_path_sm)){
+                @unlink($image_path_sm);
+            }
+
+            // product image lg
+            $image_lg = $request->file('product_image_lg');
+            $newName_lg = time() . '.' . $image_lg->extension();
+            $image_temp_path_lg = $request->file('product_image_lg')->storeAs('product-images',$newName_lg,'public');
+
+            // product image sm
+            $image_sm = $request->file('product_image_sm');
+            $newName_sm = time(). '.' .$image_sm->extension();
+            $image_temp_path_sm = $request->file('product_image_sm')->storeAs('product-images',$newName_sm,'public');
+
+            $product->where('id',$id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'price' => $request->price,
+                'slug' => $slug,
+                'compare_price' => $request->compare_price,
+                'sku' => $request->sku,
+                'barcode' => $request->barcode,
+                'track_qty' => $request->track_qty,
+                'qty' => $request->qty,
+                'status' => $request->status,
+                'category_id' => $request->category,
+                'sub_category_id' => $request->sub_category,
+                'brand_id' => $request->brands,
+                'is_featured' => $request->is_featured,
+                'sort_description' => $request->sort_description,
+                'shipping_returns' => $request->shipping_returns,
+            ]);
+    
+            $product->product_images()->update([
+                'product_image_lg' => $image_temp_path_lg,
+                'product_image_sm' => $image_temp_path_sm,
+            ]);
+    
+            return redirect()->route('products.index')->with('status','This Product Updated Successfully');
+        }
+             
     }
 
     /**
@@ -236,5 +333,26 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with('delete','This Product Item Deleted Successfully');
 
+    }
+
+    public function getProducts(Request $request)
+    {
+        // \Log::info($request->all());
+        $tempProduct = [];
+        if($request->term){
+            $products = Product::where('title','like','%'.$request->term.'%')->get();
+
+            if($products){
+                foreach($products as $product){
+                    $tempProduct = ['id'=> $product->id,'text'=>$product->title];
+                }
+            }
+            // \Log::info($products);
+        }
+
+        return response()->json([
+            'tags' => $tempProduct,
+            'status' => true,
+        ]);
     }
 }

@@ -37,9 +37,21 @@
                                             </div>
                                             <div class="col-md-12">
                                                 <div class="mb-3">
+                                                    <label for="sort_description">Sort Description</label>
+                                                    <textarea name="sort_description" id="sort_description" cols="30" rows="10" class="summernote form-control" placeholder="">
+                                                        {{ $products->sort_description }}
+                                                    </textarea>
+                                                </div>
+                                                <div class="mb-3">
                                                     <label for="description">Description</label>
-                                                    <textarea name="description" id="description" cols="30" rows="10" class="summernote form-control" placeholder="Description">
+                                                    <textarea name="description" id="description" cols="30" rows="10" class="summernote form-control" placeholder="">
                                                         {{ $products->description }}
+                                                    </textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="shipping_returns">Shipping Returns</label>
+                                                    <textarea name="shipping_returns" id="shipping_returns" cols="30" rows="10" class="summernote form-control" placeholder="">
+                                                        {{ $products->shipping_returns }}
                                                     </textarea>
                                                 </div>
                                             </div>                                            
@@ -47,15 +59,15 @@
                                     </div>                                                                        
                                 </div>
                                 <div class="card mb-3 p-3">
-                                    <label for="product_image">Product Image Lg</label>
-                                    <input type="file" name="image_lg" class="form-control @error('image_lg')is-invalid @enderror" accept="image\*"> 
-                                    <span class="text-danger">@error('image_lg') {{ $message }} @enderror</span> 
+                                    <label for="product_image_lg">Product Image Lg</label>
+                                    <input type="file" name="product_image_lg" class="form-control @error('product_image_lg')is-invalid @enderror" accept="image\*"> 
+                                    <span class="text-danger">@error('product_image_lg') {{ $message }} @enderror</span> 
                                     <img src="{{ asset('storage/'.$products->product_images->product_image_lg) }}" alt="" width="70px" height="70px">                                                               
                                 </div>
                                 <div class="card mb-3 p-3">
-                                    <label for="product_image">Product Image Sm</label>
-                                    <input type="file" name="image_sm" class="form-control @error('image_sm')is-invalid @enderror" accept="image\*"> 
-                                    <span class="text-danger">@error('image_sm') {{ $message }} @enderror</span> <img src="{{ asset('storage/'.$products->product_images->product_image_sm) }}" alt="" width="70px" height="70px">                                                                
+                                    <label for="product_image_sm">Product Image Sm</label>
+                                    <input type="file" name="product_image_sm" class="form-control @error('product_image_sm')is-invalid @enderror" accept="image\*"> 
+                                    <span class="text-danger">@error('product_image_sm') {{ $message }} @enderror</span> <img src="{{ asset('storage/'.$products->product_images->product_image_sm) }}" alt="" width="70px" height="70px">                                                                
                                 </div>
                                 <div class="card mb-3">
                                     <div class="card-body">
@@ -179,6 +191,12 @@
                                                 <option value="No" {{ $products->is_featured == 'No' ? 'selected' : '' }}>No</option> 
                                             </select>
                                         </div>
+                                        <h2 class="h4 mb-3">Related product</h2>
+                                        <div class="mb-3">
+                                            <select name="related_product" id="related_product" class="form-control">
+                                                 
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>                                 
                             </div>
@@ -201,6 +219,21 @@
 @section('customJs')
 
 <script>
+    // $('#related_product').select2({
+    //     ajax: {
+    //         url: "{{ route('product.related-product') }}",
+    //         dataType: 'json',
+    //         tags: true,
+    //         multiple: true,
+    //         minimumInputLegnth: 3,
+    //         processResults: function(data){
+    //             return {
+    //                 result: data.tags
+    //             };
+    //         }
+    //     }
+    // });
+
         $('#category').change(function(event){
 
             var category_id = $(this).val();
@@ -223,6 +256,7 @@
                 }
             });
         });
-    </script>
+        
+</script>
 
 @endsection
